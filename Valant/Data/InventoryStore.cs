@@ -22,7 +22,7 @@ namespace Valant.Data
         public bool AddItem(Item item)
         {
             // If this label is already associated with the item.
-            if (Items.ContainsKey(item.Label))
+            if (Items.ContainsKey(item.Label) || item == null)
             {
                 return false;
             }

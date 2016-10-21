@@ -40,7 +40,7 @@ namespace Valant.Controllers
         /// <param name="item">The item to add.</param>
         /// <returns>True if the item was successfuly added, false otherwise.</returns>
         [HttpPost]
-        public bool Add([FromBody]Item item)
+        public bool Add(Item item)
         {
           return  ItemRepository.AddItem(item);
         }

@@ -3,9 +3,10 @@
 -  Label and item types are strings, Expiration is a DateTime.
 -  Notifications will be handled by another component of the system; they do not need to be publicly exposed for this Web API component.
 - Notifications will contain a notification type, reference to the target item, and (while not explicitly required) timestamp of when they were generated. 
-- The Web API interface will accept parameters as JSON where appropriate.
+- The Web API interface will accept JSON for the POST request to add an item, and will accept Label as a query string parameter to remove an item.
 - Because item lifetime is in-memory, we can tie expiration date monitoring to an in-memory process with no additional loss of functionality (all expiration date information's lost when the application closes.) For example, we can use a timer created when the item is added.
-- Other commonly-used methods like "ItemExists" are not required at this time.
+- Other commonly-used Web API methods like "ItemExists" are not required at this time.
+- Adding a null item causes the Add function to fail, as does adding an item whose label already exists.
 - Note: There's a small race condition if an item's expiring within miliseconds of being added to the inventory: a notification might not be generated. This could be fixed with locks, preemptively generating an expiration notification if the item's within a small "delta" of being added, or by restructuring the event handling system.
 
 Tests:
@@ -31,11 +32,11 @@ Architecture note:
 
 Questions: 
 - What is the expected behavior if you try to add an item and the label already exists? Until this is answered, it's programmed to return false and fail to process the add command.
-- What is the expected behavior if you try to remove an item by label? Until this is answered, it's programmed to return null. 
-- What is the expected behavior generating a notification for an item that was already expired when it was added? Until this is answered, a notification is generated at the time the item is added.
+- What is the expected behavior if you try to remove an item by label and it doesn't exist? Until this is answered, it's programmed to return null. 
+- What is the expected behavior generating a notification for an item that was already expired when it was added? Until this is answered, a notification is generated at the time the item is added if it's expired.
 - How much detail does a Notification need to contain? Until this is answered, we make the tradeoff of storing a reference to the entire item in the notification at the cost of more rapidly increasing the size of the queue of notifications.
-- Are there any space limits to the overall number of notifications/notification histories we need to store? Assuming a queue of 100,000 notifications for now. (Good candidate for a NoSQL database).
-- Are there any space limits to the overall number of items we need to store at once? Assuming "no"--if the system starts to take up too many resources to keep track of inventory we'll add more hardware.
-- Are there any concurrency requirements? Assuming none; if so we could use async methods in the controller for example. InventoryStore would need to be thread-safe if so.
+- Are there any space limits to the overall number of notifications/notification histories we need to store? Assuming a queue of 100,000 notifications for now. (Good candidate data source for a NoSQL database).
+- Are there any space limits to the overall number of items we need to store at once? Assuming "no"--if the system starts to take up too many resources to keep track of inventory more hardware would be added.
+- Are there any concurrency requirements? Assuming none; if so we could use async methods in the controller for example. InventoryStore would need to be thread-safe were this the case.
 - Which REST verbs should the API be open to? Assuming post for add and get/post/delete for remove.
 
